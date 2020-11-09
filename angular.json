@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "rxjs-utils": {
+    "rxjs-utils-app": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -123,6 +123,46 @@
           }
         }
       }
+    },
+    "@iworb/rxjs-utils": {
+      "projectType": "library",
+      "root": "projects/iworb/rxjs-utils",
+      "sourceRoot": "projects/iworb/rxjs-utils/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/iworb/rxjs-utils/tsconfig.lib.json",
+            "project": "projects/iworb/rxjs-utils/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/iworb/rxjs-utils/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/iworb/rxjs-utils/src/test.ts",
+            "tsConfig": "projects/iworb/rxjs-utils/tsconfig.spec.json",
+            "karmaConfig": "projects/iworb/rxjs-utils/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/iworb/rxjs-utils/tsconfig.lib.json",
+              "projects/iworb/rxjs-utils/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
     }},
-  "defaultProject": "rxjs-utils"
+  "defaultProject": "rxjs-utils-app"
 }
