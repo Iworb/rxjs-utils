@@ -1,27 +1,30 @@
 # RxjsUtils
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 10.1.2.
+![](https://img.shields.io/badge/license-MIT-blue.svg)
 
-## Development server
+## Install
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+You could install this package with `npm i @iworb/rxjs-utils` or `yarn add @iworb/rxjs-utils` 
 
-## Code scaffolding
+## Features
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+### `combineLatestMap`
 
-## Build
+This function combines map of observables and constants to Object.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+Example:
 
-## Running unit tests
+```typescript
+const intervalA = interval(500);
+const intervalB = interval(1200).pipe(map((value) => value.toString()));
+/// This is Observable<{a: number, b: string, c: string}>
+const ctx$ = combineLatestMap({
+  a: intervalA,
+  b: intervalB,
+  c: 'constant string'
+});
+```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## Demo
 
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+You could check an online demo of all features [here](https://iworb.github.io/rxjs-utils/).
