@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.3] - 2020-11-20
+
+### Added
+
+- `download` and `downloadWaterfall` - functions to download multiple requests with progress.
+- `UntilDestroyedService` - service which should be provided in component and subscribed to it to handle active subscriptions and stop them on component destroy;
+
 ## [0.0.2] - 2020-11-10
 
 Readme fixed

@@ -7,7 +7,8 @@
 <mat-drawer-container class="app-container">
   <mat-drawer [(opened)]="sidenavService.opened" [mode]="sidenavService.mode" class="app-sidenav">
     <mat-nav-list>
-      <a mat-list-item [routerLink]="route.path" routerLinkActive="active" *ngFor="let route of routes">{{ route.path }}</a>
+      <a mat-list-item [routerLink]="route.path" routerLinkActive="active" *ngFor="let route of routes"
+         (click)="sidenavService.opened = false">{{ route.path }}</a>
     </mat-nav-list>
   </mat-drawer>
   <mat-drawer-content>

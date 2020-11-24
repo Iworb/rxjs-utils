@@ -1,0 +1,8 @@
+@mixin app-mixin($theme) {
+  $primary: map-get($theme, primary);
+
+  .mat-nav-list .mat-list-item.active, .mat-nav-list .mat-list-item:hover {
+    background-color: mat-color($primary, default);
+    color: mat-color($primary, default-contrast);
+  }
+}

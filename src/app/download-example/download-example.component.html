@@ -1,0 +1,26 @@
+<mat-card>
+  <ng-container *ngIf="status$ | async as status">
+    <div class="results">
+      Elements loaded: {{ status.done }}
+      <mat-icon aria-hidden="false" color="primary" *ngIf="status.isComplete">check_circle_outline</mat-icon>
+    </div>
+    <div class="results">
+      Progress: {{ 100 * status.progress }}%
+      <mat-icon aria-hidden="false" color="primary" *ngIf="status.isComplete">check_circle_outline</mat-icon>
+    </div>
+    <div class="results">
+      Has errors: {{ status.hasErrors ? 'yes' : 'no' }}
+    </div>
+  </ng-container>
+  <p>Download without errors</p>
+  <p class="actions">
+    <button mat-raised-button color="primary" (click)="downloadFixed()">Fixed count</button>
+    <button mat-raised-button color="primary" (click)="downloadUnknown()">Unknown count</button>
+  </p>
+  <p>Download with errors</p>
+  <p class="actions">
+    <button mat-raised-button color="primary" (click)="downloadFixedError()">Fixed count</button>
+    <button mat-raised-button color="primary" (click)="downloadUnknownError()">Unknown count</button>
+  </p>
+  <button mat-raised-button color="warn" (click)="stop()">Stop</button>
+</mat-card>

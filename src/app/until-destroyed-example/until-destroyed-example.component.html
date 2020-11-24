@@ -1,0 +1,5 @@
+<div>This counter will update only if child component is active</div>
+<h3>{{ value }}</h3>
+<button mat-raised-button
+        (click)="showUntilDestroyed = !showUntilDestroyed">{{ showUntilDestroyed ? 'Destroy child' : 'Create child' }}</button>
+<app-until-destroyed *ngIf="showUntilDestroyed" (message)="updateValue($event)"></app-until-destroyed>
