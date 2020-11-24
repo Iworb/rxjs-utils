@@ -16,7 +16,11 @@
     "package": "npm run build:lib && (for %I in (LICENSE README.md CHANGELOG.md) do copy .\\%I .\\dist\\iworb\\rxjs-utils) && cd dist/iworb/rxjs-utils && npm pack",
     "deploy": "ng build --prod --base-href https://iworb.github.io/rxjs-utils/ && ngh --dir dist/rxjs-utils-app"
   },
-  "private": true,
+  "private": false,
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/Iworb/rxjs-utils"
+  },
   "dependencies": {
     "@angular/animations": "~10.1.2",
     "@angular/cdk": "^10.2.7",
