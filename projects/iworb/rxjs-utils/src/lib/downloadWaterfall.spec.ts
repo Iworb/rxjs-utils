@@ -12,9 +12,8 @@ import { Injectable } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { cold } from 'jasmine-marbles';
 import { Observable, of, throwError } from 'rxjs';
-import { MergeMapOperator } from 'rxjs/internal/operators/mergeMap';
 import { dematerialize, materialize, mergeMap } from 'rxjs/operators';
-import { download, DownloadEvent, downloadWaterfall } from './downloadWaterfall';
+import { download, DownloadEvent, downloadWaterfall, performObservables } from './downloadWaterfall';
 
 @Injectable()
 export class MockInterceptor implements HttpInterceptor {
@@ -232,6 +231,129 @@ describe('download', () => {
     };
     const expectedMarbles = cold(marblesString, marblesValues);
     expect(download('posts', http, [])).toBeObservable(expectedMarbles);
+  });
+});
+
+describe('performObservables', () => {
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [HttpClientModule],
+      providers: [
+        {
+          provide: HTTP_INTERCEPTORS,
+          useClass: MockInterceptor,
+          multi: true
+        }
+      ]
+    })
+      .compileComponents();
+  });
+
+  it('should perform without errors', () => {
+    const total = 5;
+    const links = Array.from(
+      { length: total },
+      (v, i) => `posts/${i + 1}`
+    );
+    const http = TestBed.inject(HttpClient);
+    const observables = links.map((link) => http.get<any>(link));
+    const expectedEvents = Array.from(
+      { length: total + 1 },
+      (v, i) =>
+        new DownloadEvent({
+          name: 'posts',
+          items: Array.from({ length: i }, (vv, ii) => (ii + 1).toString()),
+          done: i,
+          total,
+          isComplete: i === total,
+          errors: [],
+        })
+    );
+    const marblesString = getMarbleString(total);
+    const marblesValues = expectedEvents.reduce(eventsToMarbleReducer, {});
+    const expectedMarbles = cold(marblesString, marblesValues);
+    expect(performObservables('posts', observables)).toBeObservable(expectedMarbles);
+  });
+
+  it('should perform with errors', () => {
+    const total = 5;
+    const links = Array.from(
+      { length: total },
+      (v, i) => `posts_e/${i + 1}`
+    );
+    const http = TestBed.inject(HttpClient);
+    const observables = links.map((link) => http.get<any>(link));
+    const expectedEvents = Array.from(
+      { length: total + 1 },
+      (v, i) =>
+        new DownloadEvent({
+          name: 'posts',
+          items: Array.from({ length: i }, (vv, ii) => (ii + 1).toString()),
+          done: i > 0 ? i - 1 : i,
+          total,
+          isComplete: i === total,
+          errors: i >= 1 ? [{ code: '400', status: 400, message: 'Error' }] : [],
+        })
+    );
+    expectedEvents.forEach((evt, idx) => {
+      if (idx > 0) {
+        evt.items[0] = undefined;
+      }
+    });
+    const marblesString = getMarbleString(total);
+    const marblesValues = expectedEvents.reduce(eventsToMarbleReducer, {});
+    const expectedMarbles = cold(marblesString, marblesValues);
+    expect(performObservables('posts', observables)).toBeObservable(expectedMarbles);
+  });
+
+  it('should retry exactly times', () => {
+    const total = 5;
+    const links = Array.from(
+      { length: total },
+      (v, i) => `posts_e/${i + 1}`
+    );
+    const http = TestBed.inject(HttpClient);
+    const observables = links.map((link) => http.get<any>(link));
+    const mockInterceptor = TestBed.inject(HTTP_INTERCEPTORS);
+    const spyOnIntercept = spyOn(mockInterceptor[0], 'intercept').and.callThrough();
+    const expectedEvents = Array.from(
+      { length: total + 1 },
+      (v, i) =>
+        new DownloadEvent({
+          name: 'posts',
+          items: Array.from({ length: i }, (vv, ii) => (ii + 1).toString()),
+          done: i > 0 ? i - 1 : i,
+          total,
+          isComplete: i === total,
+          errors: i >= 1 ? [{ code: '400', status: 400, message: 'Error' }] : [],
+        })
+    );
+    expectedEvents.forEach((evt, idx) => {
+      if (idx > 0) {
+        evt.items[0] = undefined;
+      }
+    });
+    const marblesString = getMarbleString(total);
+    const marblesValues = expectedEvents.reduce(eventsToMarbleReducer, {});
+    const expectedMarbles = cold(marblesString, marblesValues);
+    expect(performObservables('posts', observables, { retryOnError: 5, concurrentCount: 2 })).toBeObservable(expectedMarbles);
+    expect(spyOnIntercept.calls.count()).toBe(total + 5);
+  });
+
+  it('empty perform download', () => {
+    const marblesString = getMarbleString(0);
+    const marblesValues = {
+      a: new DownloadEvent({
+        name: 'posts',
+        items: [],
+        done: 0,
+        total: 0,
+        isComplete: true,
+      })
+    };
+    const expectedMarbles = cold(marblesString, marblesValues);
+    expect(performObservables('posts', [])).toBeObservable(expectedMarbles);
   });
 });
 

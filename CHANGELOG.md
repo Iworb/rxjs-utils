@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.0.3] - 2020-11-20
+## [0.0.5] - 2020-11-25
+
+### Added
+
+- `performObservables` - another function to download multiple requests as Observables.
+
+## [0.0.4] - 2020-11-24
+
+Added link to repository
+
+## [0.0.3] - 2020-11-24
 
 ### Added
 

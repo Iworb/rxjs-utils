@@ -35,7 +35,7 @@ const ctx$ = combineLatestMap({
 // ...
 ```
 
-### `download` and `downloadWaterfall`
+### `download` and `performObservables`, `downloadWaterfall`
 
 ```typescript
 function download<T>(
@@ -44,6 +44,12 @@ function download<T>(
   requests: HttpRequest<T>[],
   options?: { concurrentCount?: number, retryOnError?: number }
 ): Observable<DownloadEvent<T>> { /* ... */ }
+
+function performObservables<T>(
+  name: string,
+  observables: Observable<T>[],
+  options?: { concurrentCount?: number, retryOnError?: number }
+): Observable<DownloadEvent<T>> { /* ... */}
 
 function downloadWaterfall<T, R>(
   name: string,
@@ -56,21 +62,26 @@ function downloadWaterfall<T, R>(
 
 This function allows you to perform multiple requests and gather all results with progress per each request.
 
-If you have exact amount of requests - use `download`, otherwise, when you have to load page by page, use `downloadWaterfall`.
+If you have exact amount of requests - use `download` (or `performObservables` if you have requests as observables), otherwise, when you have to load page by page, use `downloadWaterfall`.
 
 Examples:
 
 ```typescript
-const requests = Array.from(
+const links = Array.from(
   { length: 20 },
-  (v, i) =>
-    new HttpRequest<Post>(
-      "GET",
-      `https://jsonplaceholder.typicode.com/posts/${i + 1}`
-    )
+  (v, i) => `https://jsonplaceholder.typicode.com/posts/${i + 1}`
+);
+const requests = links.map((link) =>
+  new HttpRequest<Post>('GET', link)
 );
 
-const status$ = download(
+const status1$ = performObservables(
+  'posts',               // just a name for events
+   this.links.map((link) => this.http.get<Post>(link)), // observables
+  {concurrentCount: 5},  // 5 posts could be loaded at the same time
+).subscribe();
+
+const status2$ = download(
   'posts',               // just a name for events
   this.http,             // Angular HttpClient
   this.requests,         // List of requests

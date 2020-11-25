@@ -99,6 +99,74 @@ export function download<T>(
 }
 
 /**
+ * Perform multiple observables with progress and error catching
+ * @param name Collection name
+ * @param observables List of observables
+ * @param options Options to tune download
+ *   `concurrentCount` - set maximum of requests which perform at the same time
+ *   `retryOnError` - set count of retries if request had error
+ */
+export function performObservables<T>(
+  name: string,
+  observables: Observable<T>[],
+  options?: { concurrentCount?: number, retryOnError?: number }
+): Observable<DownloadEvent<T>> {
+  if (observables && observables.length) {
+    return from(
+      observables.map((req, idx) => {
+        return req.pipe(
+          retry((options?.retryOnError ?? -1) >= 0 ? options.retryOnError : 2),
+          catchError((err) => of([idx, 'error', err])),
+          switchMap((res: T | any[]) =>
+            Array.isArray(res) ? of(res) : of([idx, 'result', res])),
+        );
+      })
+    ).pipe(
+      mergeMap(req => req, (options?.concurrentCount ?? 1) > 1 ? options.concurrentCount : 1),
+      startWith(
+        new DownloadEvent<T>({
+          name,
+          items: [],
+          done: 0,
+          total: observables.length,
+          isComplete: false,
+          errors: [],
+        }),
+      ),
+      scan((acc: DownloadEvent<any>, curr: any[]) => {
+        const items = [...acc.items];
+        const errors = [...acc.errors];
+        if (curr[1] === 'error') {
+          errors[curr[0]] = curr[2];
+          items[curr[0]] = undefined;
+        } else {
+          items[curr[0]] = curr[2];
+        }
+        const itLength = items.filter((it) => !!it).length;
+        return new DownloadEvent<any>({
+          name,
+          items,
+          done: itLength,
+          total: observables.length,
+          isComplete: items.length === observables.length,
+          errors,
+        });
+      })
+    );
+  } else {
+    return of(
+      new DownloadEvent<T>({
+        name,
+        items: [],
+        done: 0,
+        total: 0,
+        isComplete: true,
+      })
+    );
+  }
+}
+
+/**
  * Download unknown count of requests with progress and error catching
  * @param name Collection name
  * @param createRequest Function to create request which returns array of items
