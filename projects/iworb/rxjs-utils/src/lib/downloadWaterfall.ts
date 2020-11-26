@@ -50,7 +50,7 @@ export function download<T>(
           retry((options?.retryOnError ?? -1) >= 0 ? options.retryOnError : 2),
           catchError((err) => of([idx, 'error', err])),
           switchMap((res: HttpResponse<T> | any[]) =>
-            Array.isArray(res) ? of(res) : of([idx, 'result', res.body])),
+            res instanceof HttpResponse ? of([idx, 'result', res.body]) : of(res)),
         );
       })
     ).pipe(
@@ -118,7 +118,7 @@ export function performObservables<T>(
           retry((options?.retryOnError ?? -1) >= 0 ? options.retryOnError : 2),
           catchError((err) => of([idx, 'error', err])),
           switchMap((res: T | any[]) =>
-            Array.isArray(res) ? of(res) : of([idx, 'result', res])),
+            Array.isArray(res) && res.length === 3 && res[1] === 'error' ? of(res) : of([idx, 'result', res])),
         );
       })
     ).pipe(

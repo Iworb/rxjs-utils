@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.6] - 2020-11-26
+
+### Fixed
+
+- `performObservables` had a bug with loading of array, which fixed
+
 ## [0.0.5] - 2020-11-25
 
 ### Added

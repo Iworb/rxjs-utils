@@ -276,6 +276,40 @@ describe('performObservables', () => {
     expect(performObservables('posts', observables)).toBeObservable(expectedMarbles);
   });
 
+  it('should perform arrays', () => {
+    const pageSize = 5;
+    const total = Math.ceil(MockInterceptor.STRINGS_TOTAL / pageSize);
+    const http = TestBed.inject(HttpClient);
+    const observables = Array.from({ length: total }, (v, i) => http.get<any[]>('strings', {
+      params: {
+        skip: (i * pageSize).toString(),
+        take: pageSize.toString(),
+      }
+    }));
+    const expectedEvents = Array.from(
+      { length: total + 1 },
+      (v, i) => {
+        const s = MockInterceptor.STRINGS_TOTAL % pageSize;
+        return new DownloadEvent({
+          name: 'posts',
+          items: Array.from({ length: i }, (vv, ii) =>
+            Array.from({ length: i === total ? s || pageSize : pageSize }, (vvv, iii) =>
+              (ii * pageSize + iii + 1).toString())),
+          done: i,
+          total,
+          isComplete: i === total,
+          errors: [],
+        });
+      }
+    );
+    const marblesString = getMarbleString(total);
+    const marblesValues = expectedEvents.reduce(eventsToMarbleReducer, {});
+    const expectedMarbles = cold(marblesString, marblesValues);
+    console.log(expectedEvents);
+    performObservables('posts', observables).subscribe((e) => console.log(e));
+    expect(performObservables('posts', observables)).toBeObservable(expectedMarbles);
+  });
+
   it('should perform with errors', () => {
     const total = 5;
     const links = Array.from(
